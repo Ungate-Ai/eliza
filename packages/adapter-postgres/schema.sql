@@ -1,21 +1,29 @@
 -- Enable pgvector extension
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_extension
+        WHERE extname = 'vector'
+    ) THEN
+        CREATE EXTENSION IF NOT EXISTS vector SCHEMA public;
+    END IF;
+END $$;
 
--- -- Drop existing tables and extensions
--- DROP EXTENSION IF EXISTS vector CASCADE;
--- DROP TABLE IF EXISTS relationships CASCADE;
--- DROP TABLE IF EXISTS participants CASCADE;
--- DROP TABLE IF EXISTS logs CASCADE;
--- DROP TABLE IF EXISTS goals CASCADE;
--- DROP TABLE IF EXISTS memories CASCADE;
--- DROP TABLE IF EXISTS rooms CASCADE;
--- DROP TABLE IF EXISTS accounts CASCADE;
+-- Enable fuzzystrmatch
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_extension
+        WHERE extname = 'fuzzystrmatch'
+    ) THEN
+        CREATE EXTENSION IF NOT EXISTS fuzzystrmatch SCHEMA public;
+    END IF;
+END $$;
 
-
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
-
--- Create a function to determine vector dimension
-CREATE OR REPLACE FUNCTION get_embedding_dimension()
+-- Create dimension function first
+CREATE OR REPLACE FUNCTION public.get_embedding_dimension()
 RETURNS INTEGER AS $$
 BEGIN
     -- Check for OpenAI first
@@ -52,7 +60,7 @@ CREATE TABLE IF NOT EXISTS memories (
     "type" TEXT NOT NULL,
     "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "content" JSONB NOT NULL,
-    "embedding" vector(get_embedding_dimension()),  -- Dynamic vector size
+    "embedding" vector(1536),  -- This will be altered if needed
     "userId" UUID REFERENCES accounts("id"),
     "agentId" UUID REFERENCES accounts("id"),
     "roomId" UUID REFERENCES rooms("id"),

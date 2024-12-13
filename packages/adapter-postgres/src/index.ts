@@ -174,12 +174,84 @@ export class PostgresDatabaseAdapter
     async init() {
         await this.testConnection();
 
-        const schema = fs.readFileSync(
-            path.resolve(__dirname, "../schema.sql"),
-            "utf8"
-        );
+        try {
+            // First try to create extensions with superuser if available
+            try {
+                await this.query(`
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (
+                            SELECT 1
+                            FROM pg_extension
+                            WHERE extname = 'vector'
+                        ) THEN
+                            CREATE EXTENSION IF NOT EXISTS vector SCHEMA public;
+                        END IF;
 
-        await this.query(schema);
+                        IF NOT EXISTS (
+                            SELECT 1
+                            FROM pg_extension
+                            WHERE extname = 'fuzzystrmatch'
+                        ) THEN
+                            CREATE EXTENSION IF NOT EXISTS fuzzystrmatch SCHEMA public;
+                        END IF;
+                    EXCEPTION
+                        WHEN insufficient_privilege THEN
+                            RAISE NOTICE 'Insufficient privileges to create extensions. Please ensure they are pre-installed.';
+                    END $$;
+                `);
+            } catch (err) {
+                elizaLogger.warn(
+                    "Could not create extensions. Please ensure vector and fuzzystrmatch are pre-installed:",
+                    err
+                );
+            }
+
+            // Read and execute schema
+            const schema = fs.readFileSync(
+                path.resolve(__dirname, "../schema.sql"),
+                "utf8"
+            );
+
+            // Create tables first
+            const createTablesSchema = schema.replace(
+                "vector(get_embedding_dimension())",
+                "vector(1536)" // Temporary dimension
+            );
+
+            await this.query(createTablesSchema);
+
+            // Then alter the table with the correct dimension
+            const dimensionResult = await this.query(`
+                SELECT public.get_embedding_dimension() as dimension;
+            `);
+
+            const dimension = dimensionResult.rows[0].dimension;
+
+            if (dimension !== 1536) {
+                // Drop the existing index first
+                await this.query("DROP INDEX IF EXISTS idx_memories_embedding");
+
+                // Alter the column type
+                await this.query(`
+                    ALTER TABLE memories
+                    ALTER COLUMN embedding TYPE vector(${dimension})
+                    USING embedding::vector(${dimension})
+                `);
+
+                // Recreate the index
+                await this.query(`
+                    CREATE INDEX idx_memories_embedding
+                    ON memories
+                    USING hnsw (embedding vector_cosine_ops)
+                `);
+            }
+
+            elizaLogger.success("Database schema initialized successfully");
+        } catch (error) {
+            elizaLogger.error("Failed to initialize database:", error);
+            throw error;
+        }
     }
 
     async close() {
