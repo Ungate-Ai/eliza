@@ -375,6 +375,37 @@ export class PostgresDatabaseAdapter
         });
     }
 
+    async getAgentWithId(agentId: UUID): Promise<any> {
+        const fetchAgentQuery = `
+            SELECT
+                a.id,
+                a.name,
+                a.character_state,
+                a.created_at,
+                a.updated_at,
+                ad.coin_chart,
+                ad.wallet_chain,
+                ad.image,
+                ad.description,
+                ad.website,
+                ad.telegram,
+                ad.twitter_username,
+                ad.ticker,
+                ad.contract_address,
+                ad.wallet_address
+            FROM
+                public.characters a
+            LEFT JOIN
+                public.character_details ad ON a.id = ad.character_id
+            WHERE
+                a.id = $1
+        `;
+        return this.withRetry(async () => {
+            const { rows } = await this.pool.query(fetchAgentQuery, [agentId]);
+            return rows.length > 0 ? rows[0] : null;
+        });
+    }
+    
     async getAccountById(userId: UUID): Promise<Account | null> {
         return this.withRetry(async () => {
             const { rows } = await this.pool.query(

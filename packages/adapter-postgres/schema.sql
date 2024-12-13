@@ -33,7 +33,7 @@ BEGIN
     ELSIF current_setting('app.use_ollama_embedding', TRUE) = 'true' THEN
         RETURN 1024;  -- Ollama mxbai-embed-large dimension
     ELSE
-        RETURN 384;   -- BGE/Other embedding dimension
+        RETURN 1536;   -- BGE/Other embedding dimension
     END IF;
 END;
 $$ LANGUAGE plpgsql;

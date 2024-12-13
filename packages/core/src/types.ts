@@ -731,6 +731,7 @@ export interface IDatabaseAdapter {
     /** Get account by ID */
     getAccountById(userId: UUID): Promise<Account | null>;
 
+    getAgentWithId(agentId: UUID): Promise<any>;
     /** Create new account */
     createAccount(account: Account): Promise<boolean>;
 

@@ -1,6 +1,7 @@
 {
     "name": "eliza",
     "scripts": {
+        "build-win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1",
         "preinstall": "npx only-allow pnpm",
         "build": "turbo check-types build",
         "start": "pnpm --filter \"@ai16z/agent\" start --isRoot",

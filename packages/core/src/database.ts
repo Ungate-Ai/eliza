@@ -39,6 +39,9 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
      */
     abstract getAccountById(userId: UUID): Promise<Account | null>;
 
+    
+    abstract getAgentWithId(agentId: UUID): Promise<any>;
+
     /**
      * Creates a new account in the database.
      * @param account The account object to create.

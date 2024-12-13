@@ -16,6 +16,7 @@ import {
     IDatabaseAdapter,
     IDatabaseCacheAdapter,
     ModelProviderName,
+    UUID,
     defaultCharacter,
     elizaLogger,
     settings,
@@ -455,13 +456,35 @@ async function startAgent(character: Character, directClient) {
     }
 }
 
+const getAgentFromId = async () => {
+    let db: IDatabaseAdapter & IDatabaseCacheAdapter;
+    try {
+        const agentId = process.env.AGENT_ID as UUID;
+        const dataDir = path.join(__dirname, "../data");
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        db = initializeDatabase(dataDir) as IDatabaseAdapter &
+            IDatabaseCacheAdapter;
+        await db.init();
+        const agent = await db.getAgentWithId(agentId)
+        await db.close();
+        console.log(agent)
+        return agent
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 const startAgents = async () => {
     const directClient = await DirectClientInterface.start();
     const args = parseArguments();
 
     let charactersArg = args.characters || args.character;
 
-    let characters = [defaultCharacter];
+    const agent = await getAgentFromId()
+
+    let characters = [agent];
 
     if (charactersArg) {
         characters = await loadCharacters(charactersArg);
