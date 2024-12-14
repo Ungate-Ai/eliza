@@ -482,9 +482,9 @@ const startAgents = async () => {
 
     let charactersArg = args.characters || args.character;
 
-    const agent = await getAgentFromId()
+    // const agent = await getAgentFromId()
 
-    let characters = [agent];
+    let characters = [];
 
     if (charactersArg) {
         characters = await loadCharacters(charactersArg);
