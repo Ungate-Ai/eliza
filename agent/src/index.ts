@@ -315,15 +315,16 @@ export async function initializeClients(
         clients.push(await DiscordClientInterface.start(runtime));
     }
 
-    if (clientTypes.includes("telegram")) {
-        const telegramClient = await TelegramClientInterface.start(runtime);
-        if (telegramClient) clients.push(telegramClient);
-    }
-
     if (clientTypes.includes("twitter")) {
         const twitterClients = await TwitterClientInterface.start(runtime);
         clients.push(twitterClients);
     }
+
+    // if (clientTypes.includes("telegram")) {
+    //     const telegramClient = await TelegramClientInterface.start(runtime);
+    //     if (telegramClient) clients.push(telegramClient);
+    // }
+
 
     if (character.plugins?.length > 0) {
         for (const plugin of character.plugins) {
@@ -498,18 +499,18 @@ const startAgents = async () => {
         elizaLogger.error("Error starting agents:", error);
     }
 
-    function chat() {
-        const agentId = characters[0].name ?? "Agent";
-        rl.question("You: ", async (input) => {
-            await handleUserInput(input, agentId);
-            if (input.toLowerCase() !== "exit") {
-                chat(); // Loop back to ask another question
-            }
-        });
-    }
+    // function chat() {
+    //     const agentId = characters[0].name ?? "Agent";
+    //     rl.question("You: ", async (input) => {
+    //         await handleUserInput(input, agentId);
+    //         if (input.toLowerCase() !== "exit") {
+    //             chat(); // Loop back to ask another question
+    //         }
+    //     });
+    // }
 
-    elizaLogger.log("Chat started. Type 'exit' to quit.");
-    chat();
+    // elizaLogger.log("Chat started. Type 'exit' to quit.");
+    // chat();
 };
 
 startAgents().catch((error) => {
