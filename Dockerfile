@@ -25,6 +25,3 @@ ADD .env /app/.env
 
 RUN pnpm i
 RUN pnpm build
-
-# Command to run the container
-CMD ["tail", "-f", "/dev/null"]
