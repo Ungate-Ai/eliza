@@ -315,16 +315,15 @@ export async function initializeClients(
         clients.push(await DiscordClientInterface.start(runtime));
     }
 
+    if (clientTypes.includes("telegram")) {
+        const telegramClient = await TelegramClientInterface.start(runtime);
+        if (telegramClient) clients.push(telegramClient);
+    }
+
     if (clientTypes.includes("twitter")) {
         const twitterClients = await TwitterClientInterface.start(runtime);
         clients.push(twitterClients);
     }
-
-    // if (clientTypes.includes("telegram")) {
-    //     const telegramClient = await TelegramClientInterface.start(runtime);
-    //     if (telegramClient) clients.push(telegramClient);
-    // }
-
 
     if (character.plugins?.length > 0) {
         for (const plugin of character.plugins) {
