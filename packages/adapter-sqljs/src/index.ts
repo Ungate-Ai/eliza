@@ -54,6 +54,10 @@ export class SqlJsDatabaseAdapter
         return participants;
     }
 
+    async getAgentWithId(agentId: UUID): Promise<any> {
+        return null;
+    }
+
     async getParticipantUserState(
         roomId: UUID,
         userId: UUID

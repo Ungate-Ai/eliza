@@ -61,6 +61,10 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
         return data?.userState as "FOLLOWED" | "MUTED" | null;
     }
 
+    async getAgentWithId(agentId: UUID): Promise<any> {
+        return null;
+    }
+
     async setParticipantUserState(
         roomId: UUID,
         userId: UUID,
